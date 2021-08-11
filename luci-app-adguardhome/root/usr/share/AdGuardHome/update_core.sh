@@ -1,10 +1,12 @@
 #!/bin/bash
 PATH="/usr/sbin:/usr/bin:/sbin:/bin"
 binpath=$(uci get AdGuardHome.AdGuardHome.binpath)
+
 if [ -z "$binpath" ]; then
-uci set AdGuardHome.AdGuardHome.binpath="/tmp/AdGuardHome/AdGuardHome"
-binpath="/tmp/AdGuardHome/AdGuardHome"
+	uci set AdGuardHome.AdGuardHome.binpath="/tmp/AdGuardHome/AdGuardHome"
+	binpath="/tmp/AdGuardHome/AdGuardHome"
 fi
+
 mkdir -p ${binpath%/*}
 upxflag=$(uci get AdGuardHome.AdGuardHome.upxflag 2>/dev/null)
 
@@ -21,13 +23,17 @@ check_wgetcurl(){
 	[ "$1" == "1" ] && (opkg install curl ; check_wgetcurl 2 ; return)
 	echo error curl and wget && EXIT 1
 }
+
 check_latest_version(){
 	check_wgetcurl
 	latest_ver="$($downloader - https://api.github.com/repos/AdguardTeam/AdGuardHome/releases/latest 2>/dev/null|grep -E 'tag_name' |grep -E 'v[0-9.]+' -o 2>/dev/null)"
+	
 	if [ -z "${latest_ver}" ]; then
 		echo -e "\nFailed to check latest version, please try again later."  && EXIT 1
 	fi
+
 	now_ver="$($binpath -c /dev/null --check-config 2>&1| grep -m 1 -E 'v[0-9.]+' -o)"
+	
 	if [ "${latest_ver}"x != "${now_ver}"x ] || [ "$1" == "force" ]; then
 		echo -e "Local version: ${now_ver}., cloud version: ${latest_ver}." 
 		doupdate_core
@@ -53,6 +59,7 @@ check_latest_version(){
 			EXIT 0
 	fi
 }
+
 doupx(){
 	Archt="$(opkg info kernel | grep Architecture | awk -F "[ _]" '{print($2)}')"
 	case $Archt in
@@ -114,6 +121,7 @@ doupx(){
 	fi
 	rm /tmp/upx-${upx_latest_ver}-${Arch}_linux.tar.xz
 }
+
 doupdate_core(){
 	echo -e "Updating core..." 
 	mkdir -p "/tmp/AdGuardHomeupdate"
@@ -215,13 +223,14 @@ doupdate_core(){
 	echo -e "Local version: ${latest_ver}, cloud version: ${latest_ver}.\n" 
 	EXIT 0
 }
+
 EXIT(){
 	rm /var/run/update_core 2>/dev/null
 	[ "$1" != "0" ] && touch /var/run/update_core_error
 	exit $1
 }
+
 main(){
-	
 	check_if_already_running
 	check_latest_version $1
 }

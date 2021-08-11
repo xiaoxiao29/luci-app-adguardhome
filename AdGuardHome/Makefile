@@ -7,17 +7,17 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=AdGuardHome
-PKG_VERSION:=0.105.2
+PKG_VERSION:=0.106.3
 PKG_RELEASE:=1
 
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_VERSION:=v$(PKG_VERSION)
 PKG_SOURCE_URL:=https://github.com/AdguardTeam/AdGuardHome
-PKG_MIRROR_HASH:=a85af0f251cb8473f032c400643bef920e4cb1756d08dfe3e06c4911e13bab24
+PKG_MIRROR_HASH:=e3b34dbabae2ddbbcbbd67d64e27b2688eb7930bd7ac1eec4993073e6b3438ec
 
 PKG_LICENSE:=GPL-3.0-only
 PKG_LICENSE_FILES:=LICENSE.txt
-PKG_MAINTAINER:=Dobroslaw Kijowski <dobo90@gmail.com>
+PKG_MAINTAINER:=Yang Feng <yangfeng229@gmail.com>
 
 PKG_BUILD_DEPENDS:=golang/host node/host
 PKG_BUILD_PARALLEL:=1
@@ -71,6 +71,7 @@ define Build/Compile
   "$$$$(go env GOPATH)/bin/packr" -v -z -i $(PKG_BUILD_DIR)/home ; \
   $(call GoPackage/Build/Compile) ; \
 )
+
 ifeq ($(CONFIG_ADGUARDHOME_COMPRESS_UPX),y)
 	$(STAGING_DIR_HOST)/bin/upx --lzma --best $(GO_PKG_BUILD_BIN_DIR)/AdGuardHome
 endif
@@ -78,8 +79,8 @@ endef
 
 define Package/AdGuardHome/install
 	$(call GoPackage/Package/Install/Bin,$(PKG_INSTALL_DIR))
-	$(INSTALL_DIR) $(1)/usr/bin/AdGuardHome
-	$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)/AdGuardHome $(1)/usr/bin/AdGuardHome/AdGuardHome
+	$(INSTALL_DIR) $(1)/etc/config/adGuardConfig
+	$(INSTALL_BIN) $(GO_PKG_BUILD_BIN_DIR)/AdGuardHome $(1)/etc/config/adGuardConfig/AdGuardHome
 endef
 
 $(eval $(call GoBinPackage,AdGuardHome))

@@ -1,25 +1,30 @@
 #!/bin/sh
 PATH="/usr/sbin:/usr/bin:/sbin:/bin"
 checkmd5(){
-local nowmd5=$(md5sum /tmp/adguard.list 2>/dev/null)
-nowmd5=${nowmd5%% *}
-local lastmd5=$(uci get AdGuardHome.AdGuardHome.gfwlistmd5 2>/dev/null)
-if [ "$nowmd5" != "$lastmd5" ]; then
-	uci set AdGuardHome.AdGuardHome.gfwlistmd5="$nowmd5"
-	uci commit AdGuardHome
-	[ "$1" == "noreload" ] || /etc/init.d/AdGuardHome reload
-fi
+    local nowmd5=$(md5sum /tmp/adguard.list 2>/dev/null)
+    nowmd5=${nowmd5%% *}
+    local lastmd5=$(uci get AdGuardHome.AdGuardHome.gfwlistmd5 2>/dev/null)
+
+    if [ "$nowmd5" != "$lastmd5" ]; then
+        uci set AdGuardHome.AdGuardHome.gfwlistmd5="$nowmd5"
+        uci commit AdGuardHome
+        [ "$1" == "noreload" ] || /etc/init.d/AdGuardHome reload
+    fi
 }
+
 configpath=$(uci get AdGuardHome.AdGuardHome.configpath 2>/dev/null)
 [ "$1" == "del" ] && sed -i '/programaddstart/,/programaddend/d' $configpath && checkmd5 "$2" && exit 0
 gfwupstream=$(uci get AdGuardHome.AdGuardHome.gfwupstream 2>/dev/null)
+
 if [ -z $gfwupstream ]; then
-gfwupstream="tcp://208.67.220.220:5353"
+    gfwupstream="tcp://208.67.220.220:5353"
 fi
+
 if [ ! -f "$configpath" ]; then
 	echo "please make a config first"
 	exit 1
 fi
+
 wget-ssl --no-check-certificate https://cdn.jsdelivr.net/gh/gfwlist/gfwlist/gfwlist.txt -O- | base64 -d > /tmp/gfwlist.txt
 cat /tmp/gfwlist.txt | awk -v upst="$gfwupstream" 'BEGIN{getline;}{
 s1=substr($0,1,1);
@@ -74,7 +79,9 @@ if (white==0)
 else{
     print("  - '\''[/"fin"/]#'\''");}
 }END{print("  - '\''[/programaddend/]#'\''")}' > /tmp/adguard.list
+
 grep programaddstart $configpath
+
 if [ "$?" == "0" ]; then
 	sed -i '/programaddstart/,/programaddend/c\  - '\''\[\/programaddstart\/\]#'\''' $configpath
 	sed -i '/programaddstart/'r/tmp/adguard.list $configpath
@@ -82,5 +89,7 @@ else
 	sed -i '1i\  - '\''[/programaddstart/]#'\''' /tmp/adguard.list
 	sed -i '/upstream_dns:/'r/tmp/adguard.list $configpath
 fi
+
 checkmd5 "$2"
+
 rm -f /tmp/gfwlist.txt /tmp/adguard.list
