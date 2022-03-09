@@ -4,8 +4,8 @@ require("io")
 local m,s,o,o1
 local fs=require"nixio.fs"
 local uci=require"luci.model.uci".cursor()
-local configpath=uci:get("AdGuardHome","AdGuardHome","configpath") or "/etc/AdGuardHome.yaml"
-local binpath=uci:get("AdGuardHome","AdGuardHome","binpath") or "/usr/bin/AdGuardHome/AdGuardHome"
+local configpath=uci:get("AdGuardHome","AdGuardHome","configpath") or "/etc/config/adGuardConfig/AdGuardHome.yaml"
+local binpath=uci:get("AdGuardHome","AdGuardHome","binpath") or "/etc/config/adGuardConfig/AdGuardHome"
 httpport=uci:get("AdGuardHome","AdGuardHome","httpport") or "3000"
 m = Map("AdGuardHome", "AdGuard Home")
 m.description = translate("Free and open source, powerful network-wide ads & trackers blocking DNS server.")
@@ -65,7 +65,7 @@ o.default     = "none"
 o.optional = true
 ---- bin path
 o = s:option(Value, "binpath", translate("Bin Path"), translate("AdGuardHome Bin path if no bin will auto download"))
-o.default     = "/usr/bin/AdGuardHome/AdGuardHome"
+o.default     = "/etc/config/adGuardConfig/AdGuardHome"
 o.datatype    = "string"
 o.optional = false
 o.rmempty=false
@@ -97,7 +97,7 @@ o.description=translate("bin use less space,but may have compatibility issues")
 o.rmempty = true
 ---- config path
 o = s:option(Value, "configpath", translate("Config Path"), translate("AdGuardHome config path"))
-o.default     = "/etc/AdGuardHome.yaml"
+o.default     = "/etc/config/adGuardConfig/AdGuardHome.yaml"
 o.datatype    = "string"
 o.optional = false
 o.rmempty=false
@@ -118,7 +118,7 @@ return value
 end
 ---- work dir
 o = s:option(Value, "workdir", translate("Work dir"), translate("AdGuardHome work dir include rules,audit log and database"))
-o.default     = "/usr/bin/AdGuardHome"
+o.default     = "/etc/config/adGuardConfig/workspace"
 o.datatype    = "string"
 o.optional = false
 o.rmempty=false
@@ -182,7 +182,7 @@ o.write=function()
 	luci.http.redirect(luci.dispatcher.build_url("admin","services","AdGuardHome"))
 end
 o = s:option(Value, "gfwupstream", translate("Gfwlist upstream dns server"), translate("Gfwlist domain upstream dns service")..translate(a))
-o.default     = "tcp://208.67.220.220:5353"
+o.default     = "tcp://223.5.5.5"
 o.datatype    = "string"
 o.optional = true
 ---- chpass
@@ -234,7 +234,7 @@ o.optional=false
 o.description=translate("Will be restore when workdir/data is empty")
 ----backup workdir path
 
-o1.default     = "/usr/bin/AdGuardHome"
+o1.default     = "/etc/config/adGuardConfig/workspace"
 o1.datatype    = "string"
 o1.optional = false
 o1.validate=function(self, value)

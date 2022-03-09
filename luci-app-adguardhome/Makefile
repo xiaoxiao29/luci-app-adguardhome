@@ -18,7 +18,7 @@ define Package/luci-app-adguardhome
 	CATEGORY:=LuCI
 	SUBMENU:=3. Applications
 	TITLE:=LuCI app for adguardhome
-	PKG_MAINTAINER:=<https://github.com/rufengsuixing/luci-app-adguardhome>
+	PKG_MAINTAINER:=<https://github.com/AdguardTeam/AdGuardHome>
 	PKGARCH:=all
 	DEPENDS:=+!wget&&!curl:wget
 endef
@@ -35,7 +35,7 @@ endef
 
 define Package/luci-app-adguardhome/conffiles
 /usr/share/AdGuardHome/links.txt
-/etc/config/AdGuardHome
+/etc/config/adGuardConfig/AdGuardHome
 endef
 
 define Package/luci-app-adguardhome/install
