@@ -1,4 +1,4 @@
-name: Compile The New Version OpenClash
+name: Compile The New Version Adguardhome
 
 on: 
   push:
