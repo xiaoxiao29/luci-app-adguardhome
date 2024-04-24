@@ -49,7 +49,7 @@ jobs:
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt-get update
+          # sudo apt-get update
           sudo apt-get -y install curl git tar
       - name: Install OpenWrt SDK
         run: |
