@@ -28,7 +28,7 @@ jobs:
       - name: Clone Repository
         uses: actions/checkout@v3
         with:
-          ref: package
+          ref: master
 
       - name: Current Version
         id: current_version
