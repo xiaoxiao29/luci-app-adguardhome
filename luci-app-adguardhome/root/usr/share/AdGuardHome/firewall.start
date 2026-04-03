@@ -4,5 +4,9 @@ AdGuardHome_enable=$(uci get AdGuardHome.AdGuardHome.enabled)
 redirect=$(uci get AdGuardHome.AdGuardHome.redirect)
 
 if [ $AdGuardHome_enable -eq 1 -a "$redirect" == "redirect" ]; then
-	/etc/init.d/AdGuardHome do_redirect 1
+	# 检查是否已经存在重定向规则，避免循环调用
+	if [ ! -f /var/run/AdGredir ] || [ "$(cat /var/run/AdGredir)" != "1" ]; then
+		echo -n "1">/var/run/AdGredir
+		/etc/init.d/AdGuardHome do_redirect 1
+	fi
 fi

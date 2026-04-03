@@ -1,109 +1,129 @@
 #提交就可以直接用的配置模板文件
 #a template config can be use with a apply
-bind_host: 0.0.0.0
-bind_port: 3000
+http:
+  pprof:
+    port: 6060
+    enabled: false
+  address: 0.0.0.0:3000
+  session_ttl: 720h
 users:
-- name: root
-  password: $2y$10$FfeQavihMUiXCuJhHuQwy.6EOXDvkXb/S50qI5fXizqarNT/ShhQm
+  - name: admin
+    # 默认密码：admin123
+    password: $2a$10$kXH1RYoTpCiTTDmXTIxSZ.fA0sTOM.SEnL4tNFBUqCJnBssuQYNrC
+auth_attempts: 5
+block_auth_min: 15
+http_proxy: ""
 language: ""
-rlimit_nofile: 0
+theme: auto
 dns:
-  bind_host: 0.0.0.0
-  port: 5553
-  statistics_interval: 1
-  protection_enabled: true
-  filtering_enabled: true
-  filters_update_interval: 24
-  blocking_mode: nxdomain
-  blocked_response_ttl: 10
-  querylog_enabled: false
-  querylog_interval: 1
-  ratelimit: 0
+  bind_hosts:
+    - 0.0.0.0
+  port: 6053
+  anonymize_client_ip: false
+  ratelimit: 20
+  ratelimit_subnet_len_ipv4: 24
+  ratelimit_subnet_len_ipv6: 56
   ratelimit_whitelist: []
-  refuse_any: false
-  bootstrap_dns:
-#bootstrap_dns
-  all_servers: false
+  refuse_any: true
+  upstream_dns: []
+  upstream_dns_file: ""
+  fallback_dns: []
+  upstream_mode: load_balance
+  fastest_timeout: 1s
   allowed_clients: []
   disallowed_clients: []
-  blocked_hosts: []
-  parental_block_host: ""
-  safebrowsing_block_host: ""
-  blocked_services: []
+  blocked_hosts:
+    - version.bind
+    - id.server
+    - hostname.bind
+  trusted_proxies:
+    - 127.0.0.0/8
+    - ::1/128
+  cache_enabled: true
   cache_size: 4194304
-  parental_sensitivity: 13
-  parental_enabled: false
-  safesearch_enabled: false
-  safebrowsing_enabled: false
-  safebrowsing_cache_size: 1048576
-  safesearch_cache_size: 1048576
-  parental_cache_size: 1048576
-  cache_time: 30
-  rewrites: []
-  upstream_dns:
-#upstream_dns
+  cache_ttl_min: 0
+  cache_ttl_max: 0
+  cache_optimistic: false
+  cache_optimistic_answer_ttl: 30s
+  cache_optimistic_max_age: 12h
+  bogus_nxdomain: []
+  aaaa_disabled: false
+  enable_dnssec: false
+  edns_client_subnet:
+    custom_ip: ""
+    enabled: false
+    use_custom: false
+  max_goroutines: 300
+  handle_ddr: true
+  ipset: []
+  ipset_file: ""
+  bootstrap_prefer_ipv6: false
+  upstream_timeout: 10s
+  private_networks: []
+  use_private_ptr_resolvers: true
+  local_ptr_upstreams: []
+  use_dns64: false
+  dns64_prefixes: []
+  serve_http3: false
+  use_http3_upstreams: false
+  serve_plain_dns: true
+  hostsfile_enabled: true
+  pending_requests:
+    enabled: true
 tls:
   enabled: false
   server_name: ""
   force_https: false
   port_https: 443
   port_dns_over_tls: 853
+  port_dns_over_quic: 853
+  port_dnscrypt: 0
+  dnscrypt_config_file: ""
+  allow_unencrypted_doh: false
   certificate_chain: ""
   private_key: ""
   certificate_path: ""
   private_key_path: ""
+  strict_sni_check: false
+querylog:
+  dir_path: ""
+  ignored: []
+  interval: 2160h
+  size_memory: 1000
+  enabled: true
+  ignored_enabled: false
+  file_enabled: true
+statistics:
+  dir_path: ""
+  interval: 24h
+  enabled: true
 filters:
-- enabled: true
-  url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
-  name: AdGuard Simplified Domain Names filter
-  id: 1
-- enabled: true
-  url: https://adaway.org/hosts.txt
-  name: AdAway
-  id: 2
-- enabled: false
-  url: https://hosts-file.net/ad_servers.txt
-  name: hpHosts - Ad and Tracking servers only
-  id: 3
-- enabled: true
-  url: https://www.malwaredomainlist.com/hostslist/hosts.txt
-  name: MalwareDomainList.com Hosts List
-  id: 4
-- enabled: false
-  url: https://raw.githubusercontent.com/vokins/yhosts/master/data/tvbox.txt
-  name: tvbox
-  id: 1575018007
-- enabled: true
-  url: https://hosts.nfz.moe/full/hosts
-  name: neoHosts full
-  id: 1575618240
-- enabled: false
-  url: https://hosts.nfz.moe/basic/hosts
-  name: neoHosts basic
-  id: 1575618241
-- enabled: false
-  url: http://sbc.io/hosts/hosts
-  name: StevenBlack host basic
-  id: 1575618242
-- enabled: false
-  url: http://sbc.io/hosts/alternates/fakenews-gambling-porn-social/hosts
-  name: StevenBlack host+fakenews + gambling + porn + social
-  id: 1575618243
-- enabled: false
-  url: https://cdn.jsdelivr.net/gh/privacy-protection-tools/anti-AD/anti-ad-easylist.txt
-  name: anti-AD(Adblock+neohosts+yhosts+cjxlist+adhlist)
-  id: 1577113202
+  - enabled: true
+    url: https://gcore.jsdelivr.net/gh/217heidai/adblockfilters@main/rules/adblockdnslite.txt
+    name: adblockdnslite
+    id: 1698745274
+whitelist_filters: []
 user_rules: []
 dhcp:
   enabled: false
   interface_name: ""
-  gateway_ip: ""
-  subnet_mask: ""
-  range_start: ""
-  range_end: ""
-  lease_duration: 86400
-  icmp_timeout_msec: 1000
-clients: []
+  local_domain_name: lan
+  dhcpv4: {}
+  dhcpv6:
+    ra_slaac_only: false
+    ra_allow_slaac: false
+clients:
+  persistent: []
+  runtime: []
 log_file: ""
+log_max_backups: 3
+log_max_size: 100
+log_max_age: 3
+log_compress: false
+log_localtime: false
 verbose: false
-schema_version: 5
+os:
+  group: ""
+  user: ""
+  rlimit_nofile: 0
+schema_version: 29

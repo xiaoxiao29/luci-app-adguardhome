@@ -2,6 +2,36 @@ module("luci.controller.AdGuardHome",package.seeall)
 local fs=require"nixio.fs"
 local http=require"luci.http"
 local uci=require"luci.model.uci".cursor()
+
+-- 缓存机制
+local cache = {}
+local cache_expire = 30 -- 缓存过期时间（秒）
+
+-- 获取缓存数据
+local function get_cached_data(key, fetch_func)
+    local now = os.time()
+    local cached = cache[key]
+    
+    if cached and now - cached.timestamp< cache_expire then
+        return cached.data
+    end
+    
+    local data = fetch_func()
+    cache[key] = {
+        data = data,
+        timestamp = now
+    }
+    return data
+end
+
+-- 清除缓存
+local function clear_cache(key)
+    if key then
+        cache[key] = nil
+    else
+        cache = {}
+    end
+end
 function index()
 entry({"admin", "services", "AdGuardHome"},alias("admin", "services", "AdGuardHome", "base"),_("AdGuard Home"), 10).dependent = true
 entry({"admin","services","AdGuardHome","base"},cbi("AdGuardHome/base"),_("Base Setting"),1).leaf = true
@@ -48,14 +78,21 @@ function reload_config()
 	http.write('')
 end
 function act_status()
-	local e={}
-	local binpath=uci:get("AdGuardHome","AdGuardHome","binpath")
-	e.running=luci.sys.call("pgrep "..binpath.." >/dev/null")==0
-	e.redirect=(fs.readfile("/var/run/AdGredir")=="1")
+	local e = get_cached_data("adguard_status", function()
+		local status = {}
+		local binpath = uci:get("AdGuardHome", "AdGuardHome", "binpath")
+		status.running = luci.sys.call("pgrep " .. binpath .. " >/dev/null") == 0
+		status.redirect = (fs.readfile("/var/run/AdGredir") == "1")
+		return status
+	end)
+	
 	http.prepare_content("application/json")
 	http.write_json(e)
 end
 function do_update()
+	-- 更新时清除缓存
+	clear_cache("adguard_status")
+	
 	fs.writefile("/var/run/lucilogpos","0")
 	http.prepare_content("application/json")
 	http.write('')

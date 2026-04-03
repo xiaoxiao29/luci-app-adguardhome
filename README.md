@@ -1,6 +1,8 @@
 # luci-app-adguardhome
 复杂的AdGuardHome的openwrt的luci界面
-
+默认登录信息:
+ - 用户名：admin
+ - 密码：admin123
  - 可以管理网页端口
  - luci下载/更新核心版本（支持自定义链接下载）
    - 如果为tar.gz文件需要与官方的文件结构一致
