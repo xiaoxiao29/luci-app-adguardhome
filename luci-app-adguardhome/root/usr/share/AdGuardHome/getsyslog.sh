@@ -8,7 +8,7 @@ while true
 do
 	sleep 12
 	watchdog=$(cat /var/run/AdGuardHomesyslog)
-	if [ "$watchdog"x == "0"x ]; then
+	if [ "$watchdog"x = "0"x ]; then
 		kill $pid
 		rm /tmp/AdGuardHometmp.log
 		rm /var/run/AdGuardHomesyslog
