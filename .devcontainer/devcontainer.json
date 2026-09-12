@@ -1,0 +1,19 @@
+{
+  "name": "luci-app-adguardhome (OpenWrt SDK)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "remoteUser": "openwrt",
+  "mounts": [
+    {
+      "source": "luci-agh-sdk-cache",
+      "target": "/home/openwrt/.openwrt",
+      "type": "volume"
+    }
+  ],
+  "customizations": {
+    "jetbrains": {
+      "backend": "IntelliJ"
+    }
+  }
+}
