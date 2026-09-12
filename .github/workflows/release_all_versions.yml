@@ -5,6 +5,8 @@ on:
     branches:
       - master
     paths:
+      # 仅 luci-app 进 CI。AdGuardHome/ 核心包需要 Go >= 1.26 与 Node 20，
+      # 不在本 workflow 构建，由维护者在本地/devcontainer 构建（见 .devcontainer/README.md）
       - "luci-app-adguardhome/**"
   workflow_dispatch:
     inputs:
@@ -22,9 +24,19 @@ on:
         required: false
         default: false
 
+# 最小权限；Release 任务单独申请 contents: write
+permissions:
+  contents: read
+
+# 同一分支串行，避免并发操作同一个 tag / release
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   Compile-All:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -60,7 +72,7 @@ jobs:
         run: |
           cd ..
           mkdir -p openwrt-sdk
-          curl -fSLk --connect-timeout 30 --retry 2 \
+          curl -fSL --connect-timeout 30 --retry 2 \
             "${{ matrix.version.url }}" \
             -o "./openwrt-sdk/SDK.${{ matrix.version.ext }}"
           cd openwrt-sdk
@@ -82,8 +94,10 @@ jobs:
       - name: Update Feeds
         run: |
           cd ../openwrt-sdk
-          ./scripts/feeds update -a || true
-          ./scripts/feeds install -a || true
+          # 不再吞掉失败：feeds 拉取不全时（尤其 luci feed）编译必挂，
+          # 这里直接失败比后面报难以定位的依赖错误更省时间
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
 
       - name: Configure SDK
         run: |
@@ -92,8 +106,20 @@ jobs:
 
       - name: Compile Package
         run: |
+          # pipefail：否则 `| tail` 会掩盖 make 的失败（默认 shell 无 pipefail）
+          set -o pipefail
           cd ../openwrt-sdk
-          make package/custom/luci-app-adguardhome/compile V=s 2>&1 | tail -100
+          make -j"$(nproc)" package/custom/luci-app-adguardhome/compile V=s 2>&1 \
+            | tee "$GITHUB_WORKSPACE/build.log" | tail -100
+
+      - name: Upload Build Log on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-openwrt${{ matrix.version.short }}
+          path: build.log
+          if-no-files-found: ignore
+          retention-days: 14
 
       - name: Collect Build Artifacts
         run: |
@@ -130,12 +156,14 @@ jobs:
         with:
           name: luci-app-adguardhome-openwrt${{ matrix.version.short }}
           path: ipk_output/*.*
+          if-no-files-found: error
           retention-days: 90
 
   Release:
     needs: Compile-All
     if: ${{ !inputs.skip_release }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:
@@ -211,7 +239,7 @@ jobs:
 
           ### ⚠️ Notes
 
-          - IPK for OpenWrt 23/25, APK for OpenWrt 25+
+          - IPK for OpenWrt 23/24, APK for OpenWrt 25+
           - Requires AdGuardHome core installed separately
           NOTES
 
