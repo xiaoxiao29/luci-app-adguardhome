@@ -59,7 +59,7 @@ jobs:
     name: Compile OpenWrt ${{ matrix.version.short }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Dependencies
         env:
@@ -123,7 +123,7 @@ jobs:
 
       - name: Upload Build Log on Failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: build-log-openwrt${{ matrix.version.short }}
           path: build.log
@@ -161,7 +161,7 @@ jobs:
           ls -la ipk_output/
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: luci-app-adguardhome-openwrt${{ matrix.version.short }}
           path: ipk_output/*.*
@@ -177,7 +177,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Determine Version
         id: version
@@ -192,7 +192,7 @@ jobs:
           echo "Release version: $VERSION"
 
       - name: Download All Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
           pattern: luci-app-adguardhome-*
@@ -256,7 +256,7 @@ jobs:
           cat release_notes.md
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: ${{ inputs.release_title || format('luci-app-adguardhome v{0}', steps.version.outputs.version) }}
           tag_name: v${{ steps.version.outputs.version }}
