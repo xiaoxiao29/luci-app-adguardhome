@@ -106,10 +106,14 @@ jobs:
 
       - name: Build luci-base Host Tool (po2lmo)
         run: |
-          # luci-app 的 .lmo 译文依赖 luci-base 的宿主工具 po2lmo。
-          # 仅靠 PKG_BUILD_DEPENDS:=luci-base/host 在 CI 中未必解析成功
-          # （日志会出现 "build dependency on 'luci-base/host', which does not exist"），
-          # 这里显式构建，确保发布包一定带中英文译文。
+          # luci-app 的 .lmo 译文依赖 luci-base 的宿主工具 po2lmo，它已由
+          # PKG_BUILD_DEPENDS:=luci-base/host 自动引入（依赖图中可见
+          # $(curdir)/feeds/luci/luci-base/host/compile）。
+          # 这里仍显式构建一次作为保险：若 luci feed 缺失，本步骤会立即失败，
+          # 避免出现"构建成功但 ipk 静默缺少译文"的回归。
+          # 注：feeds install 阶段日志里 "build dependency on 'luci-base/host',
+          # which does not exist" 属瞬时告警（此时 luci feed 尚未安装完，
+          # 同批还会对 wget/kmod-* 等内置依赖报同样的话），不影响构建。
           cd ../openwrt-sdk
           make package/feeds/luci/luci-base/host/compile V=s
 
