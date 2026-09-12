@@ -104,6 +104,15 @@ jobs:
           cd ../openwrt-sdk
           make defconfig
 
+      - name: Build luci-base Host Tool (po2lmo)
+        run: |
+          # luci-app 的 .lmo 译文依赖 luci-base 的宿主工具 po2lmo。
+          # 仅靠 PKG_BUILD_DEPENDS:=luci-base/host 在 CI 中未必解析成功
+          # （日志会出现 "build dependency on 'luci-base/host', which does not exist"），
+          # 这里显式构建，确保发布包一定带中英文译文。
+          cd ../openwrt-sdk
+          make package/feeds/luci/luci-base/host/compile V=s
+
       - name: Compile Package
         run: |
           # pipefail：否则 `| tail` 会掩盖 make 的失败（默认 shell 无 pipefail）
