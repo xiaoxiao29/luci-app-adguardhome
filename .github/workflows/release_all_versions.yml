@@ -66,9 +66,15 @@ jobs:
           DEBIAN_FRONTEND: noninteractive
         run: |
           sudo apt-get update
-          # coreutils 提供 GNU install（ubuntu-26 镜像不再随 build-essential 带全），
           # file 是 OpenWrt SDK prereq-build 的必查项
-          sudo apt-get -y install build-essential curl git tar wget python3 rsync zstd coreutils file
+          sudo apt-get -y install build-essential curl git tar wget python3 rsync zstd file
+          # ubuntu-latest 已迁移到 Ubuntu 26（默认 uutils coreutils，install --version
+          # 不含 "GNU"），OpenWrt 23.05 SDK 的 prereq 只认 grep GNU，切回 GNU 实现：
+          if ! install --version 2>/dev/null | grep -q GNU; then
+            sudo apt-get remove -y coreutils-from-uutils --allow-remove-essential
+            sudo apt-get -y install coreutils-from-gnu
+          fi
+          install --version | grep GNU
 
       - name: Download OpenWrt ${{ matrix.version.short }} SDK
         run: |
